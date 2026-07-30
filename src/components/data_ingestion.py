@@ -2,6 +2,7 @@ import os
 import sys
 
 from dataclasses import dataclass
+from src.components.data_transformation import DataTransformation
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -78,12 +79,55 @@ class DataIngestion:
         except Exception as e:
             raise CustomException(e, sys)
 
-
 if __name__ == "__main__":
-    obj = DataIngestion()
 
-    train_data, test_data = obj.initiate_data_ingestion()
+    from src.components.data_transformation import DataTransformation
+    from src.components.model_trainer import ModelTrainer
 
-    print("Training Data Path :", train_data)
-    print("Testing Data Path  :", test_data)
-    
+    print("=" * 60)
+    print("STEP 1 : DATA INGESTION")
+    print("=" * 60)
+
+    ingestion = DataIngestion()
+
+    train_path, test_path = (
+        ingestion.initiate_data_ingestion()
+    )
+
+    print(f"Training Data : {train_path}")
+    print(f"Testing Data  : {test_path}")
+
+    print("\n" + "=" * 60)
+    print("STEP 2 : DATA TRANSFORMATION")
+    print("=" * 60)
+
+    transformation = DataTransformation()
+
+    train_arr, test_arr, preprocessor_path = (
+        transformation.initiate_data_transformation(
+            train_path,
+            test_path
+        )
+    )
+
+    print(f"Train Shape        : {train_arr.shape}")
+    print(f"Test Shape         : {test_arr.shape}")
+    print(f"Preprocessor Saved : {preprocessor_path}")
+
+    print("\n" + "=" * 60)
+    print("STEP 3 : MODEL TRAINING")
+    print("=" * 60)
+
+    trainer = ModelTrainer()
+
+    r2_score = trainer.initiate_model_trainer(
+        train_arr,
+        test_arr
+    )
+
+    print("\n")
+    print("=" * 60)
+    print("PROJECT EXECUTED SUCCESSFULLY")
+    print("=" * 60)
+    print(f"Final Test R² Score : {r2_score:.4f}")
+    print("=" * 60)
