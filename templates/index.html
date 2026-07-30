@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Predictor</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            background:linear-gradient(135deg,#0f172a,#1e293b,#334155);
+            color:white;
+        }
+
+        .container{
+            text-align:center;
+            width:700px;
+            padding:50px;
+            background:rgba(255,255,255,0.08);
+            backdrop-filter:blur(15px);
+            border-radius:20px;
+            box-shadow:0 15px 35px rgba(0,0,0,.35);
+        }
+
+        h1{
+            font-size:42px;
+            margin-bottom:20px;
+        }
+
+        p{
+            font-size:18px;
+            color:#d1d5db;
+            line-height:1.7;
+            margin-bottom:35px;
+        }
+
+        .btn{
+            display:inline-block;
+            text-decoration:none;
+            background:#2563eb;
+            color:white;
+            padding:16px 40px;
+            border-radius:10px;
+            font-size:20px;
+            transition:.3s;
+            font-weight:bold;
+        }
+
+        .btn:hover{
+            background:#1d4ed8;
+            transform:translateY(-3px);
+        }
+
+        .footer{
+            margin-top:40px;
+            color:#94a3b8;
+            font-size:14px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🎓 Student Performance Predictor</h1>
+
+    <p>
+        Predict a student's Mathematics score using Machine Learning.
+        This application was built with Flask, Scikit-Learn, and a trained regression model.
+    </p>
+
+    <a href="{{ url_for('predict_datapoint') }}" class="btn">
+        Start Prediction
+    </a>
+
+    <div class="footer">
+        Built with Flask • Scikit-Learn • Python
+    </div>
+
+</div>
+
+</body>
+</html>
