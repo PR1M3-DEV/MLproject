@@ -9,6 +9,7 @@ This module provides helper functions for:
 
 import os
 import sys
+import time
 
 import dill
 
@@ -26,12 +27,15 @@ def save_object(file_path, obj):
     try:
 
         dir_path = os.path.dirname(file_path)
+
         os.makedirs(dir_path, exist_ok=True)
 
         with open(file_path, "wb") as file_obj:
+
             dill.dump(obj, file_obj)
 
     except Exception as e:
+
         raise CustomException(e, sys)
 
 
@@ -42,9 +46,11 @@ def load_object(file_path):
     try:
 
         with open(file_path, "rb") as file_obj:
+
             return dill.load(file_obj)
 
     except Exception as e:
+
         raise CustomException(e, sys)
 
 
@@ -60,85 +66,116 @@ def evaluate_models(
     param,
 ):
     """
-    Train and evaluate multiple machine learning models.
+    Train, tune and evaluate multiple machine learning models.
 
     Returns
     -------
     dict
-        Dictionary containing detailed information for every model.
+        Dictionary containing detailed evaluation information
+        for every trained model.
     """
 
     try:
 
         report = {}
 
-        logging.info("=" * 60)
+        LINE = "=" * 60
+        SUBLINE = "-" * 60
+
+        logging.info(LINE)
         logging.info("Beginning Model Evaluation")
-        logging.info("=" * 60)
+        logging.info(LINE)
 
         for model_name, model in models.items():
 
-            logging.info(f"Training {model_name}")
+            logging.info(f"Training Model : {model_name}")
+
+            start_time = time.time()
 
             para = param.get(model_name, {})
 
-            if para:
+            best_params = {}
+            cv_score = None
+
+            if len(para) > 0:
 
                 gs = GridSearchCV(
                     estimator=model,
                     param_grid=para,
-                    cv=3,
-                    n_jobs=-1
+                    scoring="r2",
+                    cv=5,
+                    n_jobs=-1,
+                    refit=True,
+                    return_train_score=True,
                 )
 
                 gs.fit(X_train, y_train)
 
-                model.set_params(**gs.best_params_)
+                model = gs.best_estimator_
 
                 best_params = gs.best_params_
 
+                cv_score = gs.best_score_
+
             else:
 
-                best_params = {}
-
-            model.fit(X_train, y_train)
+                model.fit(X_train, y_train)
 
             y_train_pred = model.predict(X_train)
             y_test_pred = model.predict(X_test)
 
             train_score = r2_score(
                 y_train,
-                y_train_pred
+                y_train_pred,
             )
 
             test_score = r2_score(
                 y_test,
-                y_test_pred
+                y_test_pred,
             )
 
+            elapsed_time = time.time() - start_time
+
             report[model_name] = {
+
+                "model": model,
 
                 "train_score": train_score,
 
                 "test_score": test_score,
 
+                "cv_score": cv_score,
+
                 "best_params": best_params,
 
-                "model": model
+                "training_time": elapsed_time,
 
             }
 
-            logging.info(f"Model : {model_name}")
-            logging.info(f"Train R² : {train_score:.4f}")
-            logging.info(f"Test  R² : {test_score:.4f}")
-            logging.info(f"Best Parameters : {best_params}")
-            logging.info("-" * 60)
+            logging.info(f"Train R²        : {train_score:.4f}")
+            logging.info(f"Test  R²        : {test_score:.4f}")
 
-        logging.info("=" * 60)
+            if cv_score is not None:
+                logging.info(
+                    f"Best CV R²      : {cv_score:.4f}"
+                )
+
+            logging.info(
+                f"Best Parameters : {best_params}"
+            )
+
+            logging.info(
+                f"Training Time   : {elapsed_time:.2f} seconds"
+            )
+
+            logging.info(SUBLINE)
+
+        logging.info(LINE)
         logging.info("Completed Model Evaluation")
-        logging.info("=" * 60)
+        logging.info(LINE)
 
         return report
 
     except Exception as e:
+
         raise CustomException(e, sys)
